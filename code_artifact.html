@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鋅合金產品快速報價計算器 - JAAN SHIN</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- html2pdf.js CDN (用於客戶端直接產出並下載實體 PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f5ff',
+              100: '#e0ebff',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              800: '#1e3a8a',
+              900: '#0f172a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+    body {
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+    
+    /* 正式報價單 A4 列印樣式 */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      header, .no-print, main {
+        display: none !important;
+      }
+      #formalQuotationPaper {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 15mm !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .page-break-inside {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+  <!-- 系統頂部導覽 -->
+  <header class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white border-b border-blue-900/60 shadow-lg px-4 sm:px-8 py-5 no-print">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/30 tracking-wider">
+            JAAN SHIN · INTERNAL SYSTEM
+          </span>
+          <span class="text-xs text-slate-400">鋅合金精密壓鑄技術</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1 text-white flex items-center gap-3">
+          <i class="fa-solid fa-calculator text-blue-400"></i> 鋅合金產品快速報價計算器
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-300 mt-1">Zinc Alloy Die-Casting Quotation & Cost Analysis Engine</p>
+      </div>
+
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="inline-flex items-center px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
+          即時計算運行中
+        </div>
+        <button id="quickSampleBtn" type="button" class="text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-1.5 px-3 rounded-xl transition flex items-center gap-1.5">
+          <i class="fa-solid fa-wand-magic-sparkles text-yellow-400"></i> 載入示範數據
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 提示與狀態 -->
+  <div id="statusToast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm border border-slate-700">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+    <span id="statusToastMsg">通知訊息</span>
+  </div>
+
+  <!-- 主要輸入與互動區塊 -->
+  <main class="max-w-7xl mx-auto w-full px-4 sm:px-8 py-8 flex-1">
+    
+    <div class="bg-white rounded-2xl border border-slate-200/90 p-4 mb-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 text-lg">
+          <i class="fa-solid fa-sliders"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-900">案件設定與成本結構</h2>
+          <p class="text-xs text-slate-500">輸入各製程工資與原料損耗，系統將自動計算單件成本、毛利加成及全案總額。</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> 支援實體 PDF 自動生成或系統列印
+      </div>
+    </div>
+
+    <!-- 左右雙欄版面 -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- 左欄：輸入表單 (佔 7 欄) -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <!-- 區塊 01：案件與產品資料 -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-md bg-blue-600 text-white text-xs font-bold flex items-center justify-center">01</span>
+              <h2 class="font-bold text-slate-800 text-base">案件基本資料與商務條件</h2>
+            </div>
+            <span class="text-xs font-medium text-slate-400 uppercase tracking-wide">Case & Commercial</span>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="caseName" class="block text-xs font-semibold text-slate-700 mb-1.5">客戶名稱／專案代號</label>
+                <input id="caseName" type="text" value="日商高精密五金科技股份有限公司" placeholder="例如：客戶名稱或 RFQ 編號" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
+              </div>
+
+              <div>
+                <label for="productName" class="block text-xs font-semibold text-slate-700 mb-1.5">產品名稱／料號規格</label>
+                <input id="productName" type="text" value="鋅合金高精密旋鈕把手 (ZN-KNOB-80)" placeholder="例如：ZN Handle Housing" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
+              </div>
+
+              <div>
+                <label for="qty" class="block text-xs font-semibold text-slate-700 mb-1.5">預估批量（pcs）<span class="text-rose-500">*</span></label>
+                <input id="qty" type="number" min="1" step="1" value="2500" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 font-medium transition">
+              </div>
+
+              <div>
+                <label for="currency" class="block text-xs font-semibold text-slate-700 mb-1.5">報價幣別</label>
+                <select id="currency" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 bg-white transition">
+                  <option value="NT$" selected>NT$ 新台幣 (TWD)</option>
+                  <option value="US$">US$ 美元 (USD)</option>
+                </select>
+              </div>
+
+              <div id="exchangeRateContainer" class="hidden">
+                <label for="exchangeRate" class="block text-xs font-semibold text-slate-700 mb-1.5">匯率基準（NTD / USD）</label>
+                <div class="relative">
+                  <input id="exchangeRate" type="number" min="0.1" step="0.05" value="32.50" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition pr-12">
+                  <span class="absolute right-3.5 top-2.5 text-xs text-slate-400 font-medium">TWD</span>
+                </div>
+              </div>
+
+              <div>
+                <label for="profitRate" class="block text-xs font-semibold text-slate-700 mb-1.5">毛利／管銷加成率 (%)</label>
+                <div class="relative">
+                  <input id="profitRate" type="number" min="0" max="200" step="1" value="22" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 font-medium transition pr-8">
+                  <span class="absolute right-3.5 top-2.5 text-xs text-slate-400 font-medium">%</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">報價 = 純製造成本 × (1 + 毛利率%)</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 區塊 02：模具規劃與計價模式 -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-md bg-blue-600 text-white text-xs font-bold flex items-center justify-center">02</span>
+              <h2 class="font-bold text-slate-800 text-base">模具費用與分攤規劃</h2>
+            </div>
+            <span class="text-xs font-medium text-slate-400 uppercase tracking-wide">Tooling Cost</span>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="moldCost" class="block text-xs font-semibold text-slate-700 mb-1.5">模具開發總費用（NT$）</label>
+                <div class="relative">
+                  <input id="moldCost" type="number" min="0" step="1000" value="95000" placeholder="0 表示客戶自備模具或免收" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition pl-10">
+                  <span class="absolute left-3.5 top-2.5 text-xs text-slate-400 font-bold">NT$</span>
+                </div>
+              </div>
+
+              <div>
+                <label for="amortizeMold" class="block text-xs font-semibold text-slate-700 mb-1.5">模具費用計價模式</label>
+                <select id="amortizeMold" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 bg-white transition">
+                  <option value="none" selected>不分攤（模具獨立開立項目，另行請款）</option>
+                  <option value="amortize">平均分攤至單件產品中（量產攤提）</option>
+                </select>
+              </div>
+            </div>
+            <div class="mt-3 p-3 bg-blue-50/60 rounded-xl text-xs text-blue-900 flex items-start gap-2 border border-blue-100">
+              <i class="fa-solid fa-circle-info text-blue-600 mt-0.5"></i>
+              <span>選「不分攤」時，報價單將以獨立款項列出模具費，不計入單件單價；選「平均分攤」時，將依預估批量自動均攤至單件製造成本中。</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 區塊 03：原料與製程費用 -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-md bg-blue-600 text-white text-xs font-bold flex items-center justify-center">03</span>
+              <h2 class="font-bold text-slate-800 text-base">製程費用與成本參數（皆以 NT$ 計算）</h2>
+            </div>
+            <span class="text-xs font-medium text-slate-400 uppercase tracking-wide">Manufacturing</span>
+          </div>
+
+          <div class="p-6 space-y-6">
+            
+            <!-- 原料費用 -->
+            <div class="border-b border-slate-100 pb-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                <h3 class="text-xs font-bold text-slate-900 tracking-wider uppercase">原料成本估算（鋅合金 3號/5號）</h3>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label for="kgPrice" class="block text-xs font-medium text-slate-600 mb-1">鋅合金料價 (NT$/kg)</label>
+                  <input id="kgPrice" type="number" min="0" step="0.1" value="105" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600">
+                </div>
+                <div>
+                  <label for="weight" class="block text-xs font-medium text-slate-600 mb-1">成品單重 (g)</label>
+                  <input id="weight" type="number" min="0" step="0.1" value="95" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600">
+                </div>
+                <div>
+                  <label for="loss" class="block text-xs font-medium text-slate-600 mb-1">損耗與料頭加成 (%)</label>
+                  <input id="loss" type="number" min="0" step="0.5" value="10" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600">
+                </div>
+              </div>
+              <div class="mt-2 flex items-center justify-between text-xs text-slate-500 flex-wrap gap-2">
+                <span>計算公式：(單重 ÷ 1000) × 每公斤單價 × (1 + 損耗率)</span>
+                <div class="flex items-center gap-2">
+                  <label for="materialManual" class="text-slate-600 font-medium">手動指定：</label>
+                  <input id="materialManual" type="number" min="0" step="0.01" placeholder="留空依公式" class="w-28 text-xs px-2.5 py-1 rounded border border-slate-300 focus:outline-none focus:border-blue-600">
+                </div>
+              </div>
+            </div>
+
+            <!-- 壓鑄工資與模具結構 -->
+            <div class="border-b border-slate-100 pb-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                <h3 class="text-xs font-bold text-slate-900 tracking-wider uppercase">壓鑄工資與尺寸結構</h3>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                <div>
+                  <label for="length" class="block text-[11px] font-medium text-slate-500 mb-1">長度 L (mm)</label>
+                  <input id="length" type="number" min="0" step="0.1" value="82" placeholder="選填" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200">
+                </div>
+                <div>
+                  <label for="width" class="block text-[11px] font-medium text-slate-500 mb-1">寬度 W (mm)</label>
+                  <input id="width" type="number" min="0" step="0.1" value="48" placeholder="選填" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200">
+                </div>
+                <div>
+                  <label for="height" class="block text-[11px] font-medium text-slate-500 mb-1">高度 H (mm)</label>
+                  <input id="height" type="number" min="0" step="0.1" value="32" placeholder="選填" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200">
+                </div>
+                <div>
+                  <label for="cavity" class="block text-[11px] font-medium text-slate-500 mb-1">模具穴數 (Cavity)</label>
+                  <input id="cavity" type="number" min="1" step="1" value="2" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200">
+                </div>
+              </div>
+              <div>
+                <label for="diecast" class="block text-xs font-semibold text-slate-700 mb-1">單件壓鑄成型工資 (NT$/件)</label>
+                <input id="diecast" type="number" min="0" step="0.01" value="4.2" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600">
+              </div>
+            </div>
+
+            <!-- 機械加工 -->
+            <div class="border-b border-slate-100 pb-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                <h3 class="text-xs font-bold text-slate-900 tracking-wider uppercase">二次機械加工 (CNC / 攻牙 / 鑽孔)</h3>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="machiningType" class="block text-xs font-medium text-slate-600 mb-1">加工種類</label>
+                  <select id="machiningType" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                    <option value="無／不適用">無／不適用</option>
+                    <option value="攻牙 (Tapping)" selected>攻牙 (Tapping M4*2)</option>
+                    <option value="精密鑽孔 (Drilling)">精密鑽孔 (Drilling)</option>
+                    <option value="CNC 銑削加工">CNC 銑削加工</option>
+                    <option value="精密車削">精密車削</option>
+                    <option value="複合加工">複合加工</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="machining" class="block text-xs font-medium text-slate-600 mb-1">加工費 (NT$/件)</label>
+                  <input id="machining" type="number" min="0" step="0.01" value="1.8" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600">
+                </div>
+              </div>
+            </div>
+
+            <!-- 拋光研磨與表面處理 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-100 pb-5">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                  <h3 class="text-xs font-bold text-slate-900 uppercase">研磨拋光</h3>
+                </div>
+                <div class="space-y-2">
+                  <select id="polishGrade" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                    <option value="無／不適用">無／不適用 (毛胚出貨)</option>
+                    <option value="振動研磨 (震動光)">振動研磨 (震動光)</option>
+                    <option value="手工粗拋光">手工粗拋光</option>
+                    <option value="手工細拋鏡面光" selected>手工細拋鏡面光</option>
+                  </select>
+                  <input id="polish" type="number" min="0" step="0.01" value="3.2" placeholder="拋光費 (NT$/件)" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600">
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                  <h3 class="text-xs font-bold text-slate-900 uppercase">表面處理</h3>
+                </div>
+                <div class="space-y-2">
+                  <select id="finishType" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                    <option value="無／不適用">無／不適用</option>
+                    <option value="電鍍：鍍亮鉻 (Bright Chrome)" selected>電鍍：鍍亮鉻 (Bright Chrome)</option>
+                    <option value="電鍍：霧鉻 / 珍珠鉻">電鍍：霧鉻 / 珍珠鉻</option>
+                    <option value="電鍍：鍍鎳 / 黑鎳">電鍍：鍍鎳 / 黑鎳</option>
+                    <option value="烤漆：高光防指紋烤漆">烤漆：高光防指紋烤漆</option>
+                    <option value="電著塗裝 (ED Coating)">電著塗裝 (ED Coating)</option>
+                    <option value="粉體塗裝 (Powder Coating)">粉體塗裝 (Powder Coating)</option>
+                    <option value="鈍化 / 防銹防氧化處理">鈍化 / 防銹防氧化處理</option>
+                  </select>
+                  <input id="finish" type="number" min="0" step="0.01" value="4.5" placeholder="表面處理費 (NT$/件)" class="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600">
+                </div>
+              </div>
+            </div>
+
+            <!-- 其他費用動態區 -->
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <h3 class="text-xs font-bold text-slate-900 uppercase">其他費用項目（包裝、運費、自主檢驗等）</h3>
+                </div>
+                <button type="button" id="addOtherBtn" class="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-circle-plus"></i> 新增自訂項目
+                </button>
+              </div>
+
+              <div id="otherCostsContainer" class="space-y-2">
+                <!-- 預設項目 1 -->
+                <div class="other-item flex items-center gap-2">
+                  <input class="other-name flex-1 text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-600" placeholder="費用項目名稱" value="PE 氣泡袋獨立防護包裝">
+                  <div class="relative w-36">
+                    <input class="other-amount w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-600 pl-8" type="number" min="0" step="0.01" placeholder="金額" value="0.6">
+                    <span class="absolute left-2.5 top-2 text-xs text-slate-400">NT$</span>
+                  </div>
+                  <button type="button" class="del-other-btn text-slate-400 hover:text-rose-500 p-2 transition" title="刪除此項目">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+      </div>
+
+      <!-- 右欄：即時報價摘要與輸出面板 (佔 5 欄, 滾動固定) -->
+      <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-6">
+        
+        <section class="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden">
+          
+          <!-- 總報價主卡片 -->
+          <div class="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950 p-6 text-white relative overflow-hidden">
+            <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold tracking-wider text-blue-200 uppercase flex items-center gap-1.5">
+                <i class="fa-solid fa-tags text-blue-400"></i> 建議出廠單價（含利潤加成）
+              </span>
+              <span id="currencyBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/30 text-blue-100 border border-blue-400/30 font-bold">
+                NT$ TWD
+              </span>
+            </div>
+
+            <div class="my-3">
+              <div class="text-4xl sm:text-5xl font-black tracking-tight text-white flex items-baseline gap-1" id="finalUnitPrice">
+                NT$ 0.00
+              </div>
+              <p class="text-xs text-blue-200/80 mt-1.5 flex items-center gap-1.5 flex-wrap">
+                單件淨成本：<span id="baseUnitCost" class="font-bold text-white">NT$ 0.00</span>
+                <span class="opacity-60">|</span> 
+                單件利潤：<span id="marginPerUnit" class="font-bold text-emerald-300">NT$ 0.00</span>
+              </p>
+            </div>
+
+            <div class="pt-4 mt-4 border-t border-white/10 grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span class="text-slate-400 block text-[11px]">產品生產總額 (不含模具)</span>
+                <span id="productTotalAmount" class="font-bold text-slate-100 text-sm">NT$ 0.00</span>
+              </div>
+              <div class="text-right">
+                <span class="text-slate-400 block text-[11px]" id="moldStatusLabel">模具費用</span>
+                <span id="moldAmountDisplay" class="font-bold text-slate-100 text-sm">NT$ 0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 成本結構明細與進度條 -->
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-xs font-bold text-slate-700 tracking-wider uppercase">單件成本結構佔比</h3>
+              <span class="text-[11px] text-slate-400">依佔比降冪排列</span>
+            </div>
+
+            <!-- 成本清單表格 -->
+            <div class="divide-y divide-slate-100" id="costBreakdownList">
+              <!-- 動態生成成本列 -->
+            </div>
+
+            <!-- 全案總報價橫幅 -->
+            <div class="mt-6 pt-5 border-t border-slate-200">
+              <div class="flex items-center justify-between text-slate-700 mb-1">
+                <span class="text-sm font-semibold">全案總報價合計：</span>
+                <span class="text-xs text-slate-500" id="totalQtyDisplay">批量 2,500 pcs</span>
+              </div>
+              <div class="text-3xl font-black text-slate-900 tracking-tight text-right text-blue-600" id="grandTotal">
+                NT$ 0.00
+              </div>
+              <div class="text-right text-[11px] text-slate-400 mt-1" id="taxNote">
+                * 出廠價 (EXW/FOB 條件)，未含 5% 營業稅
+              </div>
+            </div>
+
+            <!-- 操作按鈕群 -->
+            <div class="mt-6 space-y-2.5">
+              
+              <!-- 方案 A：直接下載 PDF (透過 html2pdf.js 客戶端直接生成) -->
+              <button id="downloadPdfBtn" type="button" class="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2 group">
+                <i class="fa-solid fa-file-pdf text-lg text-red-200 group-hover:scale-110 transition-transform"></i> 
+                <span>直接下載 PDF 報價單 (.pdf)</span>
+              </button>
+
+              <!-- 方案 B：呼叫系統原生列印 (window.print()，支援預覽並儲存為 PDF) -->
+              <button id="systemPrintBtn" type="button" onclick="triggerNativePrint()" class="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-slate-800 hover:bg-slate-900 text-slate-100 shadow-sm transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-print"></i> 
+                <span>系統列印 / 預覽 (Ctrl+P)</span>
+              </button>
+
+              <!-- 次要操作 -->
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                <button id="exportCsvBtn" type="button" class="py-2.5 px-3 rounded-xl font-semibold text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center justify-center gap-1.5 border border-slate-200">
+                  <i class="fa-solid fa-file-excel text-emerald-600"></i> 匯出 CSV 明細
+                </button>
+                <button id="resetBtn" type="button" class="py-2.5 px-3 rounded-xl font-semibold text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 transition flex items-center justify-center gap-1.5 border border-rose-200/50">
+                  <i class="fa-solid fa-rotate-left"></i> 重設所有數值
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- 商業備註說明卡 -->
+        <div class="bg-blue-50/70 border border-blue-100 rounded-2xl p-4 text-xs text-blue-900 leading-relaxed no-print">
+          <div class="flex items-start gap-2">
+            <i class="fa-solid fa-circle-question text-blue-500 mt-0.5 flex-shrink-0 text-sm"></i>
+            <div>
+              <p class="font-bold">「另存 PDF」使用秘訣：</p>
+              <ul class="list-disc list-inside mt-1 space-y-1 text-blue-800">
+                <li><strong>推薦一鍵下載：</strong>點擊藍色「直接下載 PDF 報價單」，系統將在背景合成 A4 商業報價單並自動存檔。</li>
+                <li><strong>系統原生預覽：</strong>點擊黑色「系統列印 / 預覽」，目的地選「另存為 PDF」即可檢視完整分頁排版。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 正式報價單 A4 排版樣板 (列印與 PDF 生成專用) -->
+  <!-- 平時隱藏於螢幕，PDF 匯出時自動讀取內容 -->
+  <!-- ========================================== -->
+  <div id="formalQuotationPaper" style="display: none;" class="bg-white text-slate-900 p-8 max-w-[820px] mx-auto text-xs leading-normal">
+    
+    <!-- 報價單表頭 -->
+    <div class="border-b-2 border-slate-800 pb-4 mb-5 flex justify-between items-start">
+      <div>
+        <div class="text-xl font-black tracking-tight text-slate-900 uppercase">展新金屬科技實業股份有限公司</div>
+        <div class="text-[11px] font-semibold text-slate-600 uppercase tracking-widest mt-0.5">JAAN SHIN DIE-CASTING TECHNOLOGY CO., LTD.</div>
+        <div class="text-[10px] text-slate-500 mt-1">
+          彰化縣鹿港鎮彰濱工業區鹿工路 188 號 | TEL: (04) 781-0000 | FAX: (04) 781-0001
+        </div>
+      </div>
+      <div class="text-right">
+        <div class="text-2xl font-black text-blue-700 tracking-wider">OFFICIAL QUOTATION</div>
+        <div class="text-sm font-bold text-slate-700">產品正式報價單</div>
+        <div class="text-[11px] text-slate-500 mt-1">單號：<span id="docQuotationNo" class="font-mono font-bold text-slate-800">JS-20261027-01</span></div>
+        <div class="text-[11px] text-slate-500">日期：<span id="docQuotationDate" class="font-mono">2026/10/27</span></div>
+      </div>
+    </div>
+
+    <!-- 客戶與專案雙欄資訊 -->
+    <div class="grid grid-cols-2 gap-4 mb-5 p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+      <div class="space-y-1">
+        <div><span class="text-slate-500 font-medium">客戶名稱：</span><strong id="docCustomerName" class="text-slate-900 text-sm">--</strong></div>
+        <div><span class="text-slate-500 font-medium">產品名稱：</span><strong id="docProductName" class="text-slate-900">--</strong></div>
+        <div><span class="text-slate-500 font-medium">尺寸規格：</span><span id="docProductDims" class="font-mono">--</span></div>
+      </div>
+      <div class="space-y-1 text-right">
+        <div><span class="text-slate-500 font-medium">生產批量：</span><strong id="docOrderQty" class="font-mono text-sm text-blue-700">--</strong> pcs</div>
+        <div><span class="text-slate-500 font-medium">報價幣別：</span><span id="docCurrency" class="font-bold">--</span></div>
+        <div><span class="text-slate-500 font-medium">模具條件：</span><span id="docMoldSpec">--</span></div>
+      </div>
+    </div>
+
+    <!-- 成本與製程明細表格 -->
+    <div class="mb-5">
+      <div class="text-xs font-bold text-slate-800 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+        <span class="w-1.5 h-3.5 bg-blue-700 rounded-sm inline-block"></span>
+        單件製造成本與工資結構明細 (Per Unit Cost Breakdown)
+      </div>
+      <table class="w-full border-collapse text-xs border border-slate-300">
+        <thead>
+          <tr class="bg-slate-100 text-slate-700 border-b border-slate-300 font-semibold text-center">
+            <th class="py-2 px-3 text-left w-12">項次</th>
+            <th class="py-2 px-3 text-left">製程工序 / 費用項目說明</th>
+            <th class="py-2 px-3 text-left">技術規格 / 加工參數</th>
+            <th class="py-2 px-3 text-right w-28">單件金額</th>
+            <th class="py-2 px-3 text-right w-20">佔比</th>
+          </tr>
+        </thead>
+        <tbody id="docBreakdownBody" class="divide-y divide-slate-200 text-slate-700">
+          <!-- 動態載入報價明細 -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 總額核算彙總區塊 -->
+    <div class="grid grid-cols-2 gap-4 mb-5 items-start">
+      
+      <!-- 商業與交易條款 -->
+      <div class="text-[10px] text-slate-600 bg-slate-50 p-3 rounded border border-slate-200 space-y-1">
+        <div class="font-bold text-slate-800 text-xs mb-1">【交易約定條款】</div>
+        <p>1. 價格條件：出廠價 (EX-Work) / 國內未稅價，營業稅 5% 另計。</p>
+        <p>2. 原料浮動：報價基準鋅錠現貨價為基底，若波動逾 ±5% 另行議價。</p>
+        <p>3. 模具付款：訂單確立付 50%，T1 試模樣品確認付 50%。</p>
+        <p>4. 報價效期：本報價單開立起 30 天內有效。</p>
+      </div>
+
+      <!-- 金額結算表 -->
+      <div class="bg-slate-100/70 p-3.5 rounded border border-slate-300 text-xs space-y-2">
+        <div class="flex justify-between text-slate-600">
+          <span>單件純製造成本：</span>
+          <span id="docBaseUnitCost" class="font-mono font-medium">--</span>
+        </div>
+        <div class="flex justify-between text-slate-600">
+          <span>毛利管銷加成 (<span id="docProfitRate">--</span>%)：</span>
+          <span id="docMarginPerUnit" class="font-mono font-medium">--</span>
+        </div>
+        <div class="flex justify-between text-slate-900 font-bold border-t border-slate-200 pt-1.5 text-sm">
+          <span>建議單件出廠單價：</span>
+          <span id="docFinalUnitPrice" class="font-mono text-blue-700">--</span>
+        </div>
+        <div class="flex justify-between text-slate-700 text-xs">
+          <span>產品訂單總價 (批量計)：</span>
+          <span id="docProductTotal" class="font-mono font-semibold">--</span>
+        </div>
+        <div class="flex justify-between text-slate-700 text-xs" id="docMoldRow">
+          <span>模具開發總費用 (一次性)：</span>
+          <span id="docMoldTotal" class="font-mono font-semibold">--</span>
+        </div>
+        <div class="flex justify-between text-slate-900 font-extrabold border-t-2 border-slate-400 pt-2 text-base">
+          <span>全案報價總額合計：</span>
+          <span id="docGrandTotal" class="font-mono text-blue-900">--</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 簽章欄位 -->
+    <div class="grid grid-cols-2 gap-8 border-t border-slate-300 pt-6 mt-6">
+      <div class="space-y-10">
+        <div class="text-xs font-bold text-slate-800">報價開立單位：展新金屬科技實業股份有限公司</div>
+        <div class="flex items-center justify-between text-[11px] text-slate-500 border-b border-slate-400 pb-1">
+          <span>業務承辦簽章：__________________</span>
+          <span>主管核決：__________________</span>
+        </div>
+      </div>
+      <div class="space-y-10">
+        <div class="text-xs font-bold text-slate-800">客戶確認回簽（同意依上述條件下單）：</div>
+        <div class="text-[11px] text-slate-500 border-b border-slate-400 pb-1">
+          <span>客戶簽章 / 職銜：________________________　日期：____年___月___日</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 頁尾 -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 no-print">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>© 2026 JAAN SHIN CASTING TECHNOLOGY CO., LTD. 展新金屬科技 版權所有</span>
+      <span>鋅合金精密壓鑄一站式自動化報價系統</span>
+    </div>
+  </footer>
+
+  <!-- 核心 JavaScript -->
+  <script>
+    // 快捷選取
+    const $ = id => document.getElementById(id);
+
+    // 固定製程成本項目定義
+    const processDefs = [
+      {
+        id: 'rawMaterial',
+        name: '鋅合金原料費',
+        spec: () => {
+          const w = $('weight').value || 0;
+          const p = $('kgPrice').value || 0;
+          const l = $('loss').value || 0;
+          return `成品重 ${w}g / 鋅價 ${p}元/kg (損耗 ${l}%)`;
+        },
+        icon: 'fa-cubes',
+        get: () => {
+          const manual = $('materialManual').value;
+          if (manual !== '' && parseFloat(manual) >= 0) return parseFloat(manual);
+          const weightKg = (num($('weight').value) || 0) / 1000;
+          const kgPrice = num($('kgPrice').value) || 0;
+          const lossRate = 1 + ((num($('loss').value) || 0) / 100);
+          return weightKg * kgPrice * lossRate;
+        }
+      },
+      {
+        id: 'diecasting',
+        name: '壓鑄成型工資',
+        spec: () => {
+          const cav = $('cavity').value || 1;
+          return `成型開模模穴數：${cav} Cavity`;
+        },
+        icon: 'fa-fire-burner',
+        get: () => num($('diecast').value)
+      },
+      {
+        id: 'machining',
+        name: '二次精密加工',
+        spec: () => $('machiningType').value,
+        icon: 'fa-gear',
+        get: () => num($('machining').value)
+      },
+      {
+        id: 'polishing',
+        name: '研磨拋光工藝',
+        spec: () => $('polishGrade').value,
+        icon: 'fa-gem',
+        get: () => num($('polish').value)
+      },
+      {
+        id: 'surface',
+        name: '外觀表面處理',
+        spec: () => $('finishType').value,
+        icon: 'fa-wand-magic-sparkles',
+        get: () => num($('finish').value)
+      }
+    ];
+
+    // 數值安全轉換
+    function num(v) {
+      const n = parseFloat(v);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    }
+
+    // 取得匯率
+    function getRate() {
+      if ($('currency').value === 'US$') {
+        const rate = parseFloat($('exchangeRate').value);
+        return rate > 0 ? rate : 32.5;
+      }
+      return 1.0;
+    }
+
+    // 貨幣格式化
+    function formatMoney(ntdAmount, showFullDecimals = false) {
+      const cur = $('currency').value;
+      const rate = getRate();
+      const val = ntdAmount / rate;
+      const decimals = cur === 'US$' ? (showFullDecimals ? 4 : 3) : (showFullDecimals ? 3 : 2);
+      return `${cur} ${val.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+    }
+
+    // 計算所有成本項目
+    function calculateAllCostItems() {
+      const list = processDefs.map(p => ({
+        name: p.name,
+        spec: p.spec(),
+        amount: p.get(),
+        icon: p.icon
+      }));
+
+      // 檢查模具分攤
+      const isAmortize = $('amortizeMold').value === 'amortize';
+      const moldCost = num($('moldCost').value);
+      const qty = Math.max(1, num($('qty').value));
+
+      if (isAmortize && moldCost > 0) {
+        list.push({
+          name: '模具費攤提 (每件)',
+          spec: `模具總價 NT$ ${moldCost.toLocaleString()} / 批量 ${qty.toLocaleString()} pcs`,
+          amount: moldCost / qty,
+          icon: 'fa-layer-group'
+        });
+      }
+
+      // 動態其他自訂項目
+      document.querySelectorAll('.other-item').forEach(el => {
+        const nameInput = el.querySelector('.other-name');
+        const amountInput = el.querySelector('.other-amount');
+        const itemName = (nameInput && nameInput.value.trim()) || '自訂其他費用';
+        const itemVal = num(amountInput ? amountInput.value : 0);
+        list.push({
+          name: itemName,
+          spec: '包裝/自主檢驗/物流等單件分攤',
+          amount: itemVal,
+          icon: 'fa-box-open'
+        });
+      });
+
+      return list;
+    }
+
+    // 核心計算與頁面更新
+    function recalculate() {
+      const isUSD = $('currency').value === 'US$';
+      $('exchangeRateContainer').classList.toggle('hidden', !isUSD);
+      $('currencyBadge').textContent = isUSD ? 'US$ USD' : 'NT$ TWD';
+
+      const items = calculateAllCostItems();
+      const baseCost = items.reduce((sum, item) => sum + item.amount, 0); // NTD
+      const profitRate = (num($('profitRate').value) || 0) / 100;
+      const marginPerUnit = baseCost * profitRate; // NTD
+      const finalUnit = baseCost + marginPerUnit; // NTD
+      const qty = Math.max(1, num($('qty').value));
+      const productTotal = finalUnit * qty; // NTD
+
+      const moldCost = num($('moldCost').value);
+      const isAmortize = $('amortizeMold').value === 'amortize';
+
+      // 畫面數據展示
+      $('finalUnitPrice').textContent = formatMoney(finalUnit);
+      $('baseUnitCost').textContent = formatMoney(baseCost);
+      $('marginPerUnit').textContent = formatMoney(marginPerUnit);
+      $('productTotalAmount').textContent = formatMoney(productTotal);
+      $('totalQtyDisplay').textContent = `生產批量 ${qty.toLocaleString()} pcs`;
+
+      let grandTotal = productTotal;
+      if (!isAmortize && moldCost > 0) {
+        $('moldStatusLabel').textContent = '獨立模具費 (一次性)';
+        $('moldAmountDisplay').textContent = formatMoney(moldCost);
+        grandTotal += moldCost;
+      } else if (isAmortize && moldCost > 0) {
+        $('moldStatusLabel').textContent = '模具費用狀態';
+        $('moldAmountDisplay').textContent = '已均攤至單價';
+      } else {
+        $('moldStatusLabel').textContent = '模具費用';
+        $('moldAmountDisplay').textContent = formatMoney(0);
+      }
+
+      $('grandTotal').textContent = formatMoney(grandTotal);
+
+      // 右側成本進度長條圖
+      const container = $('costBreakdownList');
+      container.innerHTML = '';
+      const sortedItems = [...items].sort((a, b) => b.amount - a.amount);
+
+      sortedItems.forEach(item => {
+        const percentage = baseCost > 0 ? (item.amount / baseCost * 100) : 0;
+        const row = document.createElement('div');
+        row.className = 'py-2.5';
+        row.innerHTML = `
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="font-medium text-slate-700 flex items-center gap-2">
+              <i class="fa-solid ${item.icon} text-slate-400 w-4 text-center"></i>
+              ${escapeHtml(item.name)}
+            </span>
+            <div class="text-right">
+              <span class="font-bold text-slate-900">${formatMoney(item.amount)}</span>
+              <span class="text-slate-400 text-[11px] ml-1.5">(${percentage.toFixed(1)}%)</span>
+            </div>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+            <div class="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style="width: ${percentage}%"></div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      // 同步更新隱藏的 A4 正式報價單樣板資料
+      syncFormalQuotationPaper(items, baseCost, profitRate, marginPerUnit, finalUnit, qty, productTotal, moldCost, isAmortize, grandTotal);
+    }
+
+    // 同步正式報價單 DOM 內容
+    function syncFormalQuotationPaper(items, baseCost, profitRate, marginPerUnit, finalUnit, qty, productTotal, moldCost, isAmortize, grandTotal) {
+      $('docCustomerName').textContent = $('caseName').value.trim() || '未指定客戶名稱';
+      $('docProductName').textContent = $('productName').value.trim() || '未指定產品料號';
+      
+      const l = $('length').value || '-';
+      const w = $('width').value || '-';
+      const h = $('height').value || '-';
+      $('docProductDims').textContent = `${l} x ${w} x ${h} mm (重約 ${$('weight').value || 0}g)`;
+      $('docOrderQty').textContent = qty.toLocaleString();
+      $('docCurrency').textContent = $('currency').value === 'US$' ? `US$ 美元 (匯率 1:${getRate()})` : 'NT$ 新台幣';
+
+      $('docMoldSpec').textContent = `${$('cavity').value || 1} 穴 / ${isAmortize ? '費用均攤至產品' : '獨立開立請款'}`;
+
+      // 日期與單號
+      const today = new Date();
+      const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '/');
+      $('docQuotationDate').textContent = dateStr;
+      $('docQuotationNo').textContent = `JS-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}-01`;
+
+      // 填入明細清單
+      const tbody = $('docBreakdownBody');
+      tbody.innerHTML = '';
+      items.forEach((item, idx) => {
+        const pct = baseCost > 0 ? (item.amount / baseCost * 100) : 0;
+        const tr = document.createElement('tr');
+        tr.className = idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
+          <td class="py-2 px-3 font-semibold text-slate-800">${escapeHtml(item.name)}</td>
+          <td class="py-2 px-3 text-slate-500">${escapeHtml(item.spec)}</td>
+          <td class="py-2 px-3 text-right font-mono font-bold text-slate-800">${formatMoney(item.amount)}</td>
+          <td class="py-2 px-3 text-right font-mono text-slate-500">${pct.toFixed(1)}%</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // 總額結算
+      $('docBaseUnitCost').textContent = formatMoney(baseCost);
+      $('docProfitRate').textContent = ($('profitRate').value || 0);
+      $('docMarginPerUnit').textContent = formatMoney(marginPerUnit);
+      $('docFinalUnitPrice').textContent = formatMoney(finalUnit);
+      $('docProductTotal').textContent = formatMoney(productTotal);
+
+      if (!isAmortize && moldCost > 0) {
+        $('docMoldRow').style.display = 'flex';
+        $('docMoldTotal').textContent = formatMoney(moldCost);
+      } else {
+        $('docMoldRow').style.display = 'none';
+      }
+
+      $('docGrandTotal').textContent = formatMoney(grandTotal);
+    }
+
+    // HTML 跳脫防止 XSS
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, match => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[match]));
+    }
+
+    // 顯示通知提示
+    function showToast(msg) {
+      const toast = $('statusToast');
+      $('statusToastMsg').textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    // 方案 A：直接下載 PDF (透過 html2pdf.js)
+    $('downloadPdfBtn').addEventListener('click', function() {
+      recalculate(); // 確保資料最新
+      
+      const btn = $('downloadPdfBtn');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-lg"></i> <span>正在排版並生成 PDF...</span>`;
+
+      const paper = $('formalQuotationPaper');
+      
+      // 暫時解除隱藏以便 html2canvas 擷取向量與字型
+      paper.style.display = 'block';
+
+      const clientName = ($('caseName').value || '客戶報價').trim().replace(/[\s\/\\?%*:|"<>]/g, '_');
+      const filename = `JAAN_SHIN_報價單_${clientName}_${new Date().toISOString().slice(0, 10)}.pdf`;
+
+      const opt = {
+        margin:       [10, 10, 10, 10], // 上右下左 mm
+        filename:     filename,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(paper).save().then(() => {
+        paper.style.display = 'none';
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        showToast('PDF 報價單已成功生成並下載！');
+      }).catch(err => {
+        console.error('PDF 生成失敗：', err);
+        paper.style.display = 'none';
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        // 退回觸發原生列印
+        window.print();
+      });
+    });
+
+    // 方案 B：系統原生列印觸發器 (window.print())
+    function triggerNativePrint() {
+      recalculate();
+      window.print();
+    }
+    $('systemPrintBtn').addEventListener('click', triggerNativePrint);
+
+    // 新增動態自訂項目
+    $('addOtherBtn').addEventListener('click', () => {
+      const container = $('otherCostsContainer');
+      const div = document.createElement('div');
+      div.className = 'other-item flex items-center gap-2';
+      div.innerHTML = `
+        <input class="other-name flex-1 text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-600" placeholder="例：全檢治具 / 木箱包裝費">
+        <div class="relative w-36">
+          <input class="other-amount w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-600 pl-8" type="number" min="0" step="0.01" placeholder="金額" value="0">
+          <span class="absolute left-2.5 top-2 text-xs text-slate-400">NT$</span>
+        </div>
+        <button type="button" class="del-other-btn text-slate-400 hover:text-rose-500 p-2 transition" title="刪除此項目">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      `;
+
+      div.querySelector('.del-other-btn').addEventListener('click', () => {
+        div.remove();
+        recalculate();
+      });
+
+      div.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', recalculate);
+      });
+
+      container.appendChild(div);
+      div.querySelector('.other-name').focus();
+      recalculate();
+    });
+
+    // 預設已存在項目的刪除按鈕
+    document.querySelectorAll('.del-other-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.currentTarget.closest('.other-item').remove();
+        recalculate();
+      });
+    });
+
+    // 輸入即時重算
+    document.addEventListener('input', e => {
+      if (e.target.matches('input, select')) {
+        recalculate();
+      }
+    });
+
+    $('currency').addEventListener('change', recalculate);
+    $('amortizeMold').addEventListener('change', recalculate);
+
+    // 載入示範數據
+    $('quickSampleBtn').addEventListener('click', () => {
+      $('caseName').value = '光寶電子科技股份有限公司 (Lite-On)';
+      $('productName').value = '伺服器機櫃精密鎖扣手柄 (ZN-LOCK-PRO)';
+      $('qty').value = '5000';
+      $('currency').value = 'NT$';
+      $('profitRate').value = '25';
+      $('moldCost').value = '110000';
+      $('amortizeMold').value = 'none';
+      $('kgPrice').value = '108';
+      $('weight').value = '120';
+      $('loss').value = '12';
+      $('materialManual').value = '';
+      $('length').value = '115';
+      $('width').value = '42';
+      $('height').value = '25';
+      $('cavity').value = '2';
+      $('diecast').value = '4.8';
+      $('machiningType').value = 'CNC 銑削加工';
+      $('machining').value = '2.5';
+      $('polishGrade').value = '手工細拋鏡面光';
+      $('polish').value = '3.8';
+      $('finishType').value = '電鍍：鍍亮鉻 (Bright Chrome)';
+      $('finish').value = '5.2';
+      recalculate();
+      showToast('已成功載入示範報價專案資料！');
+    });
+
+    // 重設表單
+    $('resetBtn').addEventListener('click', () => {
+      const inputs = document.querySelectorAll('input:not(#exchangeRate)');
+      inputs.forEach(i => {
+        if (i.id === 'qty') i.value = '1000';
+        else if (i.id === 'profitRate') i.value = '20';
+        else if (i.id === 'kgPrice') i.value = '105';
+        else if (i.id === 'weight') i.value = '90';
+        else if (i.id === 'loss') i.value = '10';
+        else if (i.id === 'cavity') i.value = '1';
+        else i.value = '';
+      });
+      $('currency').value = 'NT$';
+      $('amortizeMold').value = 'none';
+      $('machiningType').selectedIndex = 0;
+      $('polishGrade').selectedIndex = 0;
+      $('finishType').selectedIndex = 0;
+      $('otherCostsContainer').innerHTML = '';
+      recalculate();
+      showToast('費用與產品參數已還原重設');
+    });
+
+    // 匯出 CSV (帶 UTF-8 BOM，保證 Excel 開啟不亂碼)
+    $('exportCsvBtn').addEventListener('click', () => {
+      const cur = $('currency').value;
+      const rate = getRate();
+      const items = calculateAllCostItems();
+      const baseCost = items.reduce((s, x) => s + x.amount, 0);
+      const profitRate = (num($('profitRate').value) || 0) / 100;
+      const marginPerUnit = baseCost * profitRate;
+      const finalUnit = baseCost + marginPerUnit;
+      const qty = Math.max(1, num($('qty').value));
+      const productTotal = finalUnit * qty;
+      const moldCost = num($('moldCost').value);
+      const isAmortize = $('amortizeMold').value === 'amortize';
+      const grandTotal = productTotal + (!isAmortize ? moldCost : 0);
+
+      const rows = [
+        ['JAAN SHIN 展新金屬科技 - 鋅合金壓鑄產品快速報價明細表'],
+        ['產出時間', new Date().toLocaleString()],
+        [],
+        ['【一、客戶與基本條件】'],
+        ['客戶專案名稱', $('caseName').value || '未指定'],
+        ['產品品名規格', $('productName').value || '未指定'],
+        ['預估訂單批量 (pcs)', qty],
+        ['計價幣別', cur],
+        ['匯率基準 (NTD/USD)', rate],
+        ['毛利管銷加成率', `${$('profitRate').value}%`],
+        [],
+        ['【二、材料與模具條件】'],
+        ['產品單件淨重 (g)', $('weight').value],
+        ['鋅合金基準單價 (NT$/kg)', $('kgPrice').value],
+        ['製程損耗率', `${$('loss').value}%`],
+        ['產品外型尺寸 (長x寬x高 mm)', `${$('length').value || '-'} x ${$('width').value || '-'} x ${$('height').value || '-'}`],
+        ['模具開模穴數 (Cavity)', $('cavity').value],
+        ['模具開發費用 (NT$)', moldCost],
+        ['模具計價模式', isAmortize ? '平均攤提至單件產品' : '獨立開立請款'],
+        [],
+        ['【三、單件製造成本結構明細】', `單件金額 (${cur})`, '成本佔比 (%)'],
+        ...items.map(it => [
+          it.name,
+          (it.amount / rate).toFixed(4),
+          baseCost > 0 ? (it.amount / baseCost * 100).toFixed(2) + '%' : '0.00%'
+        ]),
+        [],
+        ['【四、結算報價彙總】'],
+        ['單件製造成本 (純成本)', (baseCost / rate).toFixed(4), '100.00%'],
+        ['單件毛利加成金額', (marginPerUnit / rate).toFixed(4), ''],
+        ['建議單件出廠單價', (finalUnit / rate).toFixed(4), ''],
+        ['批量生產總價款', (productTotal / rate).toFixed(2), ''],
+        ['獨立模具總價', !isAmortize && moldCost > 0 ? (moldCost / rate).toFixed(2) : '0 (已均攤或免收)', ''],
+        ['全案總報價 (含模具)', (grandTotal / rate).toFixed(2), '']
+      ];
+
+      const csvContent = '\uFEFF' + rows.map(r => 
+        r.map(col => `"${String(col ?? '').replace(/"/g, '""')}"`).join(',')
+      ).join('\r\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const filename = `Quotation_${($('caseName').value || 'Zinc_Part').trim().replace(/[\s\/\\?%*:|"<>]/g, '_')}_${new Date().toISOString().slice(0, 10)}.csv`;
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast('CSV 報價明細檔已匯出下載！');
+    });
+
+    // 頁面載入初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      recalculate();
+    });
+  </script>
+</body>
+</html>
