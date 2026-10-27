@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鋅合金產品快速報價計算器</title>
+<style>
+:root{--bg:#f4f6fa;--panel:#fff;--ink:#1d2939;--muted:#667085;--line:#e4e7ec;--blue:#2457d6;--blue2:#eaf0ff;--green:#087443;--shadow:0 8px 24px rgba(16,24,40,.06)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Noto Sans TC",sans-serif}
+header{background:#13233f;color:#fff;padding:24px max(22px,calc((100% - 1180px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+header .eyebrow{font-size:12px;letter-spacing:1.5px;color:#b9c9f9;font-weight:700}h1{font-size:25px;margin:7px 0}header p{margin:0;color:#cbd5e1;font-size:13px}
+main{max-width:1180px;margin:24px auto;padding:0 18px 40px}.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}.tag{background:#e8f7ef;color:#087443;border-radius:99px;padding:7px 11px;font-size:12px;font-weight:700}
+.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.8fr);gap:18px;align-items:start}.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}.panel-head{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.panel-head h2{font-size:16px;margin:0}.panel-body{padding:18px 20px}.sub{font-size:12px;color:var(--muted);margin-top:5px}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field label{display:block;font-size:12px;color:#475467;font-weight:700;margin-bottom:7px}.field input,.field select{width:100%;padding:10px 11px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;font-size:14px;color:var(--ink);outline:none}.field input:focus,.field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #2457d61a}.field small{display:block;color:var(--muted);font-size:11px;margin-top:5px}.section-title{font-size:13px;font-weight:800;color:#344054;margin:20px 0 12px;display:flex;align-items:center;gap:8px}.section-title:first-child{margin-top:0}.dot{width:7px;height:7px;border-radius:50%;background:var(--blue)}.cost-row{padding:13px 0;border-bottom:1px solid #eef0f4}.cost-row:last-child{border-bottom:0}.cost-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.cost-top strong{font-size:14px}.cost-value{font-weight:800;color:#182b52;font-variant-numeric:tabular-nums}.cost-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cost-grid .field input,.cost-grid .field select{padding:9px}.muted-note{font-size:11px;color:var(--muted);line-height:1.5;margin-top:8px}.btn{border:0;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}.btn-primary{background:var(--blue);color:white}.btn-primary:hover{background:#1945b8}.btn-light{background:#f2f4f7;color:#344054}.btn-light:hover{background:#e4e7ec}.btn-danger{background:#fff0f0;color:#b42318;padding:7px 9px}.btn-sm{padding:7px 10px;font-size:12px}.summary{position:sticky;top:16px}.total-box{background:linear-gradient(135deg,#172b50,#254f9f);color:white;padding:22px;border-radius:12px;margin-bottom:17px}.total-box .label{font-size:12px;color:#d6e2ff}.total{font-size:34px;font-weight:800;letter-spacing:-.5px;margin:8px 0}.total-box .hint{font-size:11px;color:#d6e2ff}.summary table{width:100%;border-collapse:collapse;font-size:12px}.summary th{text-align:left;color:var(--muted);font-weight:700;padding:10px 7px;border-bottom:1px solid var(--line)}.summary td{padding:11px 7px;border-bottom:1px solid #eef0f4}.summary td:nth-child(2),.summary th:nth-child(2){text-align:right;font-variant-numeric:tabular-nums}.summary td:nth-child(3),.summary th:nth-child(3){text-align:right}.bar{height:5px;background:#eef2f7;border-radius:99px;margin-top:5px;overflow:hidden}.bar span{display:block;height:100%;background:var(--blue);border-radius:99px}.summary-foot{padding-top:13px;margin-top:5px;display:flex;justify-content:space-between;font-weight:800}.other-item{display:grid;grid-template-columns:minmax(0,1fr) 125px auto;gap:8px;margin-bottom:9px}.other-item input{min-width:0;padding:9px 10px;border:1px solid #d0d5dd;border-radius:8px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}.footer-note{font-size:11px;color:var(--muted);margin-top:13px;line-height:1.6}.pill{font-size:11px;color:#475467;background:#f2f4f7;padding:5px 8px;border-radius:6px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.summary{position:static}.fields{grid-template-columns:1fr 1fr}}@media(max-width:520px){header{padding:20px}h1{font-size:21px}.fields,.cost-grid{grid-template-columns:1fr}.panel-body{padding:15px}.panel-head{padding:15px}.total{font-size:29px}.other-item{grid-template-columns:1fr 100px auto}}
+</style>
+</head>
+<body>
+<header><div><div class="eyebrow">JAAN SHIN · INTERNAL TOOL</div><h1>鋅合金產品快速報價計算器</h1><p>Quotation Generator Tool · 初步成本估算與明細匯出</p></div><span class="pill" style="background:#263b60;color:#e5edff">本機操作・即時計算</span></header>
+<main>
+<div class="topline"><div><strong>報價案件設定</strong><div class="sub">輸入產品資訊與各製程費用，系統將自動更新成本佔比。</div></div><span class="tag">LIVE CALCULATION</span></div>
+<div class="layout">
+<div>
+<section class="panel"><div class="panel-head"><h2>01　案件與產品資料</h2><span class="pill">基本資訊</span></div><div class="panel-body">
+<div class="fields">
+<div class="field"><label for="caseName">案件／客戶名稱</label><input id="caseName" placeholder="例如：客戶名稱或 RFQ 編號"></div>
+<div class="field"><label for="productName">產品名稱／料號</label><input id="productName" placeholder="例如：Zn Handle Housing"></div>
+<div class="field"><label for="qty">預估數量（pcs）</label><input id="qty" type="number" min="0" value="1000"></div>
+<div class="field"><label for="currency">報價幣別</label><select id="currency"><option value="NT$">NT$ 新台幣</option><option value="US$">US$ 美元</option></select></div>
+</div>
+</div></section>
+<section class="panel"><div class="panel-head"><h2>02　製程與成本參數</h2><span class="pill">單件成本</span></div><div class="panel-body">
+<div class="section-title"><span class="dot"></span>原料價格</div>
+<div class="fields">
+<div class="field"><label for="kgPrice">鋅合金單價（NT$/kg）</label><input id="kgPrice" type="number" min="0" step="0.01" value="100"></div>
+<div class="field"><label for="weight">成品重量（g）</label><input id="weight" type="number" min="0" step="0.01" value="100"></div>
+<div class="field"><label for="loss">預估損耗率（%）</label><input id="loss" type="number" min="0" step="0.1" value="10"><small>損耗率已包含於原料成本加成中，請勿重複加計。</small></div>
+<div class="field"><label for="materialManual">原料費手動覆寫（每件）</label><input id="materialManual" type="number" min="0" step="0.0001" placeholder="留空則依公式計算"></div>
+</div>
+<div class="section-title"><span class="dot"></span>壓鑄價格</div>
+<div class="cost-grid">
+<div class="field"><label for="length">長度（mm）</label><input id="length" type="number" min="0" step=".1" placeholder="選填"></div>
+<div class="field"><label for="width">寬度（mm）</label><input id="width" type="number" min="0" step=".1" placeholder="選填"></div>
+<div class="field"><label for="height">高度（mm）</label><input id="height" type="number" min="0" step=".1" placeholder="選填"></div>
+<div class="field"><label for="cavity">模具穴數（Cavity）</label><input id="cavity" type="number" min="1" step="1" value="1"></div>
+<div class="field" style="grid-column:1/-1"><label for="diecast">壓鑄費（每件）</label><input id="diecast" type="number" min="0" step=".0001" value="0" placeholder="請輸入基準費用或供應商報價"></div>
+</div>
+<div class="section-title"><span class="dot"></span>加工價格</div>
+<div class="cost-grid">
+<div class="field"><label for="machiningType">加工種類</label><select id="machiningType"><option>無／不適用</option><option>攻牙</option><option>鑽孔</option><option>CNC 銑削</option><option>車削</option><option>其他加工</option></select></div>
+<div class="field"><label for="machining">加工費（每件）</label><input id="machining" type="number" min="0" step=".0001" value="0"></div>
+</div>
+<div class="section-title"><span class="dot"></span>拋光價格</div>
+<div class="cost-grid">
+<div class="field"><label for="polishGrade">拋光等級</label><select id="polishGrade"><option>無／不適用</option><option>粗拋光</option><option>細拋光</option></select></div>
+<div class="field"><label for="polish">拋光費（每件）</label><input id="polish" type="number" min="0" step=".0001" value="0"></div>
+</div>
+<div class="section-title"><span class="dot"></span>表面處理價格</div>
+<div class="cost-grid">
+<div class="field"><label for="finishType">表面處理種類</label><select id="finishType"><option>無／不適用</option><option>電鍍／電著</option><option>烤漆</option><option>陽極處理</option><option>粉體塗裝</option><option>其他表面處理</option></select></div>
+<div class="field"><label for="finish">表面處理費（每件）</label><input id="finish" type="number" min="0" step=".0001" value="0"></div>
+</div>
+<div class="section-title"><span class="dot"></span>其他費用</div>
+<div id="otherCosts"></div><button class="btn btn-light btn-sm" id="addOther" type="button">＋ 新增其他費用</button>
+<div class="muted-note">例如包裝、檢驗、運輸或其他單件分攤費用。新增項目會即時納入總成本。</div>
+</div></section>
+</div>
+<div>
+<section class="panel summary"><div class="panel-head"><h2>03　即時報價摘要</h2><span class="pill">每件成本</span></div><div class="panel-body">
+<div class="total-box"><div class="label">初步報價總金額（單件）</div><div class="total" id="total">NT$ 0.00</div><div class="hint">依目前輸入的單件成本加總，不含未輸入項目。</div></div>
+<table><thead><tr><th>成本項目</th><th>金額</th><th>佔比</th></tr></thead><tbody id="summaryRows"></tbody></table>
+<div class="summary-foot"><span>案件總額（單價 × 數量）</span><span id="grandTotal">NT$ 0.00</span></div>
+<div class="actions"><button class="btn btn-primary" id="exportBtn">匯出報價明細（CSV）</button><button class="btn btn-light" id="resetBtn">重設費用</button></div>
+<div class="footer-note">注意：此工具提供初步成本估算。壓鑄、加工、拋光及表面處理目前採手動輸入，尺寸與穴數僅作案件紀錄，尚未建立自動級距費率。實際對外報價前，請確認供應商報價、模具費、包裝、運費、利潤與付款條件。</div>
+</div></section>
+</div>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const fixedCosts=[
+ {name:'原料',get:()=>{const manual=$('materialManual').value;return manual!==''?num(manual):(num($('weight').value)/1000)*num($('kgPrice').value)*(1+num($('loss').value)/100)}},
+ {name:'壓鑄',get:()=>num($('diecast').value)},
+ {name:'加工',get:()=>num($('machining').value)},
+ {name:'拋光',get:()=>num($('polish').value)},
+ {name:'表面處理',get:()=>num($('finish').value)}
+];
+function num(v){const n=parseFloat(v);return Number.isFinite(n)&&n>0?n:0}
+function currency(v){return $('currency').value+' '+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:4})}
+function allCosts(){const arr=fixedCosts.map(x=>({name:x.name,amount:x.get()}));document.querySelectorAll('.other-item').forEach(row=>{arr.push({name:row.querySelector('.other-name').value.trim()||'其他費用',amount:num(row.querySelector('.other-amount').value)})});return arr}
+function recalc(){
+ const costs=allCosts(),total=costs.reduce((s,x)=>s+x.amount,0),qty=num($('qty').value);
+ $('total').textContent=currency(total);$('grandTotal').textContent=currency(total*qty);
+ $('summaryRows').innerHTML=costs.map(x=>{const pct=total?x.amount/total*100:0;return `<tr><td>${escapeHtml(x.name)}<div class="bar"><span style="width:${pct}%"></span></div></td><td>${currency(x.amount)}</td><td>${pct.toFixed(1)}%</td></tr>`}).join('');
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('addOther').addEventListener('click',()=>{const row=document.createElement('div');row.className='other-item';row.innerHTML='<input class="other-name" aria-label="其他費用項目名稱" placeholder="費用項目名稱"><input class="other-amount" aria-label="其他費用金額" type="number" min="0" step=".0001" placeholder="金額"><button class="btn btn-danger" type="button" aria-label="刪除此費用">×</button>';row.querySelector('button').addEventListener('click',()=>{row.remove();recalc()});row.querySelectorAll('input').forEach(i=>i.addEventListener('input',recalc));$('otherCosts').appendChild(row);row.querySelector('input').focus();recalc()});
+document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',recalc));
+$('resetBtn').addEventListener('click',()=>{['materialManual','diecast','machining','polish','finish'].forEach(id=>$(id).value='');$('kgPrice').value=100;$('weight').value=100;$('loss').value=10;$('qty').value=1000;$('otherCosts').innerHTML='';recalc()});
+$('exportBtn').addEventListener('click',()=>{
+ const costs=allCosts(),total=costs.reduce((s,x)=>s+x.amount,0),qty=num($('qty').value);
+ const rows=[['鋅合金產品快速報價明細'],['案件／客戶',$('caseName').value],['產品名稱／料號',$('productName').value],['數量（pcs）',qty],['幣別',$('currency').value],['成品重量（g）', $('weight').value],['鋅合金單價（NT$/kg）',$('kgPrice').value],['損耗率（%）',$('loss').value],['長度（mm）',$('length').value],['寬度（mm）',$('width').value],['高度（mm）',$('height').value],['模具穴數',$('cavity').value],['加工種類',$('machiningType').value],['拋光等級',$('polishGrade').value],['表面處理種類',$('finishType').value],[],['成本項目','單件金額','成本佔比（%）'],...costs.map(x=>[x.name,x.amount.toFixed(4),total?(x.amount/total*100).toFixed(2):'0.00']),['單件初步報價',total.toFixed(4),'100.00'],['案件總額', (total*qty).toFixed(4),'']];
+ const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='quotation_detail.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+});
+recalc();
+</script>
+</body></html>
